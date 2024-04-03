@@ -45,6 +45,12 @@ export function Village() {
     const aircraftImage = new Image();
     aircraftImage.src = "/effects/farmBlade.png";
 
+    // Carregue a imagem de fumaça
+    const smokeImage = new Image();
+    smokeImage.src = "/effects/smoke.png";
+    let smokeY = 340; // posição inicial da fumaça ajustada
+    let smokeOpacity = 1; // opacidade inicial da fumaça
+
     function animate() {
       context.clearRect(0, 0, canvas.width, canvas.height);
       if (cityImage.complete) {
@@ -67,6 +73,18 @@ export function Village() {
           -aircraftImage.height / 2
         );
         context.restore();
+      }
+
+      if (smokeImage.complete) {
+        context.globalAlpha = smokeOpacity;
+        context.drawImage(smokeImage, 400, smokeY);
+        context.globalAlpha = 1; // resetar a opacidade
+      }
+      smokeY -= 2; // mover a fumaça para cima mais rápido
+      smokeOpacity -= 0.02; // diminuir a opacidade mais rápido
+      if (smokeY < 190 || smokeOpacity <= 0) {
+        smokeY = 340; // resetar a posição da fumaça quando ela sai do canvas
+        smokeOpacity = 1; // resetar a opacidade
       }
 
       rotation += 0.01;
