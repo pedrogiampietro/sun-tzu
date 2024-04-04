@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function Village() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = canvasRef.current as any;
     const context = canvas.getContext("2d");
     let rotation = 0;
 
@@ -17,7 +17,7 @@ export function Village() {
 
     // Carregar a imagem de ground
     const groundImage = new Image();
-    groundImage.src = "/grounds/ground.jpg"; // substitua pelo caminho real para a imagem
+    groundImage.src = "/grounds/ground.jpg";
     groundImage.onload = () => {
       const pattern = context.createPattern(groundImage, "repeat");
       context.fillStyle = pattern;
@@ -59,7 +59,6 @@ export function Village() {
     function animate() {
       context.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Preenche o canvas com o padrão de ground
       if (groundImage.complete) {
         const pattern = context.createPattern(groundImage, "repeat");
         context.fillStyle = pattern;
@@ -105,10 +104,9 @@ export function Village() {
     }
   }, []);
 
-  // Defina o tamanho do canvas para ocupar 100% da tela
   useEffect(() => {
     const resizeCanvas = () => {
-      const canvas = canvasRef.current;
+      const canvas = canvasRef.current as any;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
