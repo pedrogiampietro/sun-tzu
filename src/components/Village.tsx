@@ -1,21 +1,27 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 export function Village() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current as any;
+    const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     let rotation = 0;
 
     const cityImage = new Image();
     cityImage.src = "/cityBackground.jpg";
-    cityImage.onload = () => {
-      context.drawImage(cityImage, 0, 0, 2100, 1128);
-    };
-
+    cityImage.onload = animate;
     cityImage.onerror = () => {
       console.error("Erro ao carregar a imagem da cidade.");
+    };
+
+    // Carregar a imagem de ground
+    const groundImage = new Image();
+    groundImage.src = "/grounds/ground.jpg"; // substitua pelo caminho real para a imagem
+    groundImage.onload = () => {
+      const pattern = context.createPattern(groundImage, "repeat");
+      context.fillStyle = pattern;
+      context.fillRect(0, 0, canvas.width, canvas.height);
     };
 
     const buildingImages = [
@@ -45,14 +51,21 @@ export function Village() {
     const aircraftImage = new Image();
     aircraftImage.src = "/effects/farmBlade.png";
 
-    // Carregue a imagem de fumaça
     const smokeImage = new Image();
     smokeImage.src = "/effects/smoke.png";
-    let smokeY = 340; // posição inicial da fumaça ajustada
-    let smokeOpacity = 1; // opacidade inicial da fumaça
+    let smokeY = 340;
+    let smokeOpacity = 1;
 
     function animate() {
       context.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Preenche o canvas com o padrão de ground
+      if (groundImage.complete) {
+        const pattern = context.createPattern(groundImage, "repeat");
+        context.fillStyle = pattern;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
       if (cityImage.complete) {
         context.drawImage(cityImage, 0, 0, 2100, 1128);
       }
@@ -78,21 +91,35 @@ export function Village() {
       if (smokeImage.complete) {
         context.globalAlpha = smokeOpacity;
         context.drawImage(smokeImage, 400, smokeY);
-        context.globalAlpha = 1; // resetar a opacidade
+        context.globalAlpha = 1;
       }
-      smokeY -= 2; // mover a fumaça para cima mais rápido
-      smokeOpacity -= 0.02; // diminuir a opacidade mais rápido
+      smokeY -= 1;
+      smokeOpacity -= 0.02;
       if (smokeY < 190 || smokeOpacity <= 0) {
-        smokeY = 340; // resetar a posição da fumaça quando ela sai do canvas
-        smokeOpacity = 1; // resetar a opacidade
+        smokeY = 340;
+        smokeOpacity = 1;
       }
 
       rotation += 0.01;
       requestAnimationFrame(animate);
     }
-
-    cityImage.onload = animate;
   }, []);
 
-  return <canvas ref={canvasRef} width={2100} height={1128} />;
+  // Defina o tamanho do canvas para ocupar 100% da tela
+  useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} />;
 }
