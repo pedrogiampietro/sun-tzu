@@ -1,13 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import {
+	ReactZoomPanPinchRef,
+	TransformComponent,
+	TransformWrapper,
+} from 'react-zoom-pan-pinch';
 
 export function Village() {
 	const canvasRef = useRef(null);
-	const [scale, setScale] = useState(1.2); // Escala inicial
-	const [position, setPosition] = useState({ x: 0, y: 0 }); // Posição inicial
+	const [scale, setScale] = useState(1.2);
+	const [position, setPosition] = useState({ x: 0, y: 0 });
+
+	let wasRealPanning = false;
+	const onPanningStart = (
+		ref: ReactZoomPanPinchRef,
+		event: TouchEvent | MouseEvent
+	) => {
+		wasRealPanning = false;
+	};
+	const onPanning = (
+		ref: ReactZoomPanPinchRef,
+		event: TouchEvent | MouseEvent
+	) => {
+		wasRealPanning = true;
+	};
+
+	const onTransformed = (
+		ref: ReactZoomPanPinchRef,
+		state: {
+			scale: number;
+			positionX: number;
+			positionY: number;
+		}
+	) => {};
 
 	useEffect(() => {
-		const canvas = canvasRef.current as any;
+		const canvas = canvasRef.current;
+		canvas.width = 3840;
+		canvas.height = 2160;
+
 		const context = canvas.getContext('2d');
 		let rotation = 0;
 
@@ -161,29 +191,22 @@ export function Village() {
 
 		animate();
 
-		return () => {
-			smokes = [];
-		};
-	}, []);
-
-	useEffect(() => {
-		const resizeCanvas = () => {
-			const canvas = canvasRef.current as any;
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight;
-		};
-
-		resizeCanvas();
-		window.addEventListener('resize', resizeCanvas);
-
-		return () => {
-			window.removeEventListener('resize', resizeCanvas);
-		};
+		return () => {};
 	}, []);
 
 	return (
-		<TransformWrapper>
-			<TransformComponent>
+		<TransformWrapper
+			centerOnInit={true}
+			centerZoomedOut={true}
+			smooth={false}
+			onPanningStart={onPanningStart}
+			onPanning={onPanning}
+			onTransformed={onTransformed}
+			wheel={{ step: 0.25 }}
+			minScale={0.5} // Ajuste o limite mínimo de zoom
+			maxScale={3} // Ajuste o limite máximo de zoom
+		>
+			<TransformComponent wrapperStyle={{ width: '100vw', height: '100vh' }}>
 				<canvas ref={canvasRef} />
 			</TransformComponent>
 		</TransformWrapper>
