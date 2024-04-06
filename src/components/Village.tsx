@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export function Village() {
 	const canvasRef = useRef(null);
@@ -54,6 +54,43 @@ export function Village() {
 		smokeImage.src = '/effects/smoke.png';
 		let smokes = [];
 
+		const rippleImage = new Image();
+		rippleImage.src = '/effects/ripple.png';
+
+		// Array para armazenar os pontos de animação de ripple
+		const ripplePoints = [
+			{ x: 770, y: 190 },
+			{ x: 770, y: 200 },
+			{ x: 770, y: 210 },
+			{ x: 770, y: 220 },
+			{ x: 770, y: 230 },
+		];
+
+		// Array para armazenar o deslocamento vertical das ondulações
+		const rippleOffsets = new Array(ripplePoints.length).fill(0);
+
+		// Adiciona a animação de ripple nos pontos demarcados
+		function drawRippleEffects() {
+			ripplePoints.forEach((point, index) => {
+				const offsetY = rippleOffsets[index];
+				// Calcula a opacidade com base na posição vertical da ondulação
+				const opacity =
+					1 -
+					Math.abs(offsetY - rippleImage.height / 2) / (rippleImage.height / 2);
+				context.globalAlpha = opacity;
+				context.drawImage(rippleImage, point.x, point.y + offsetY);
+				context.globalAlpha = 1; // Restaura a opacidade para o valor padrão
+			});
+		}
+
+		// Atualiza a posição das ondulações para criar o efeito de animação
+		function animateRipples() {
+			rippleOffsets.forEach((offset, index) => {
+				// Reduzir a velocidade de deslocamento vertical
+				rippleOffsets[index] = (offset + 0.1) % rippleImage.height;
+			});
+		}
+
 		function animate() {
 			context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -89,22 +126,27 @@ export function Village() {
 				context.globalAlpha = smoke.opacity;
 				context.drawImage(smokeImage, smoke.x, smoke.y);
 				context.globalAlpha = 1;
-				smoke.y -= 0.5; // Reduzimos a velocidade vertical
+				smoke.y -= 0.5; // Reduz a velocidade vertical
 				smoke.x -= 0.2; // Movimento horizontal para a esquerda
-				smoke.opacity -= 0.005; // Reduzimos a opacidade de forma mais lenta
+				smoke.opacity -= 0.005; // Reduz a opacidade de forma mais lenta
 				if (smoke.opacity <= 0) {
 					smokes.splice(index, 1);
 				}
 			});
 
 			if (Math.random() < 0.02) {
-				// Diminuímos a frequência de geração de fumaça
+				// Diminui a frequência de geração de fumaça
 				smokes.push({
 					x: 400,
 					y: 340,
 					opacity: 1,
 				});
 			}
+
+			drawRippleEffects();
+
+			// Atualiza a posição das ondulações
+			animateRipples();
 
 			rotation += 0.01;
 			requestAnimationFrame(animate);
