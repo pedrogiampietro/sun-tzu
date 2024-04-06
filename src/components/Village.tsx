@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 export function Village() {
 	const canvasRef = useRef(null);
+	const [scale, setScale] = useState(1.2); // Escala inicial
+	const [position, setPosition] = useState({ x: 0, y: 0 }); // Posição inicial
 
 	useEffect(() => {
-		const canvas = canvasRef.current;
+		const canvas = canvasRef.current as any;
 		const context = canvas.getContext('2d');
 		let rotation = 0;
 
@@ -52,7 +55,7 @@ export function Village() {
 
 		const smokeImage = new Image();
 		smokeImage.src = '/effects/smoke.png';
-		let smokes = [];
+		let smokes = [] as any;
 
 		const rippleImage = new Image();
 		rippleImage.src = '/effects/ripple.png';
@@ -93,6 +96,9 @@ export function Village() {
 
 		function animate() {
 			context.clearRect(0, 0, canvas.width, canvas.height);
+			context.save();
+			context.scale(scale, scale);
+			context.translate(position.x, position.y);
 
 			if (groundImage.complete) {
 				const pattern = context.createPattern(groundImage, 'repeat');
@@ -122,7 +128,7 @@ export function Village() {
 				context.restore();
 			}
 
-			smokes.forEach((smoke, index) => {
+			smokes.forEach((smoke: any, index: number) => {
 				context.globalAlpha = smoke.opacity;
 				context.drawImage(smokeImage, smoke.x, smoke.y);
 				context.globalAlpha = 1;
@@ -149,6 +155,7 @@ export function Village() {
 			animateRipples();
 
 			rotation += 0.01;
+			context.restore();
 			requestAnimationFrame(animate);
 		}
 
@@ -161,7 +168,7 @@ export function Village() {
 
 	useEffect(() => {
 		const resizeCanvas = () => {
-			const canvas = canvasRef.current;
+			const canvas = canvasRef.current as any;
 			canvas.width = window.innerWidth;
 			canvas.height = window.innerHeight;
 		};
@@ -174,5 +181,11 @@ export function Village() {
 		};
 	}, []);
 
-	return <canvas ref={canvasRef} />;
+	return (
+		<TransformWrapper>
+			<TransformComponent>
+				<canvas ref={canvasRef} />
+			</TransformComponent>
+		</TransformWrapper>
+	);
 }
