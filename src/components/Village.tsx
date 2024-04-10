@@ -1,41 +1,36 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+
+import { Button } from "./ui/button";
 import {
-  ReactZoomPanPinchRef,
-  TransformComponent,
-  TransformWrapper,
-} from "react-zoom-pan-pinch";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 export function Village() {
   const canvasRef = useRef(null);
-  const [scale, setScale] = useState(1.2);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [scale] = useState(1.2);
+  const [position] = useState({ x: 0, y: 0 });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState<any>(null);
 
-  let wasRealPanning = false;
-  const onPanningStart = (
-    ref: ReactZoomPanPinchRef,
-    event: TouchEvent | MouseEvent
-  ) => {
-    wasRealPanning = false;
-  };
-  const onPanning = (
-    ref: ReactZoomPanPinchRef,
-    event: TouchEvent | MouseEvent
-  ) => {
-    wasRealPanning = true;
-  };
-
-  const onTransformed = (
-    ref: ReactZoomPanPinchRef,
-    state: {
-      scale: number;
-      positionX: number;
-      positionY: number;
+  function handleBuildingClick(building: any) {
+    if (building && selectedBuilding && building.id === selectedBuilding.id) {
+      setIsModalOpen(true);
+    } else {
+      setIsModalOpen(false);
     }
-  ) => {};
+  }
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = canvasRef.current as any;
     canvas.width = 3840;
     canvas.height = 2160;
 
@@ -74,6 +69,7 @@ export function Village() {
       { id: 14, src: "buildings/building14.png", x: 830, y: 650 },
       { id: 15, src: "buildings/building15.png", x: 840, y: 330 },
     ];
+
     const buildings = buildingImages.map((building) => {
       const img = new Image();
       img.src = building.src;
@@ -126,7 +122,7 @@ export function Village() {
 
     canvas.addEventListener("mousemove", handleMouseMove);
 
-    function handleMouseMove(event) {
+    function handleMouseMove(event: any) {
       const rect = canvas.getBoundingClientRect();
       const x =
         ((event.clientX - rect.left) / (rect.right - rect.left)) * canvas.width;
@@ -135,22 +131,7 @@ export function Village() {
       setMousePosition({ x, y });
     }
 
-    function isMouseOverBuilding(building) {
-      const scaledMouseX = mousePosition.x / scale - position.x;
-      const scaledMouseY = mousePosition.y / scale - position.y;
-
-      const buildingWidth = building.img.width;
-      const buildingHeight = building.img.height;
-
-      return (
-        scaledMouseX >= building.x &&
-        scaledMouseX <= building.x + buildingWidth &&
-        scaledMouseY >= building.y &&
-        scaledMouseY <= building.y + buildingHeight
-      );
-    }
-
-    let currentBuildingId = null;
+    let currentBuildingId = null as any;
 
     function getMouseOverBuilding() {
       const scaledMouseX = mousePosition.x / scale - position.x;
@@ -166,12 +147,13 @@ export function Village() {
           scaledMouseY >= building.y &&
           scaledMouseY <= building.y + buildingHeight
         ) {
-          return building; // Retorna o prédio sob o mouse
+          return building;
         }
       }
 
-      return null; // Retorna nulo se nenhum prédio estiver sob o mouse
+      return null;
     }
+
     function animate() {
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.save();
@@ -234,7 +216,6 @@ export function Village() {
       });
 
       if (Math.random() < 0.02) {
-        // Diminui a frequência de geração de fumaça
         smokes.push({
           x: 400,
           y: 340,
@@ -243,8 +224,6 @@ export function Village() {
       }
 
       drawRippleEffects();
-
-      // Atualiza a posição das ondulações
       animateRipples();
 
       rotation += 0.01;
@@ -255,26 +234,81 @@ export function Village() {
 
     animate();
 
+    canvas.addEventListener("click", () => {
+      const building = getMouseOverBuilding();
+      if (building) {
+        console.log(`Clique detectado no edifício com ID: ${building.id}`);
+        setSelectedBuilding(building);
+        handleBuildingClick(building);
+      }
+    });
+
     return () => {
       canvas.removeEventListener("mousemove", handleMouseMove);
     };
   }, [mousePosition]);
 
   return (
-    <TransformWrapper
-      centerOnInit={true}
-      centerZoomedOut={true}
-      smooth={false}
-      onPanningStart={onPanningStart}
-      onPanning={onPanning}
-      onTransformed={onTransformed}
-      wheel={{ step: 0.25 }}
-      minScale={0.5} // Ajuste o limite mínimo de zoom
-      maxScale={3} // Ajuste o limite máximo de zoom
-    >
-      <TransformComponent wrapperStyle={{ width: "100vw", height: "100vh" }}>
-        <canvas ref={canvasRef} />
-      </TransformComponent>
-    </TransformWrapper>
+    <>
+      <TransformWrapper
+        centerOnInit={true}
+        centerZoomedOut={true}
+        smooth={false}
+        wheel={{ step: 0.25 }}
+        minScale={0.5} // Ajuste o limite mínimo de zoom
+        maxScale={3} // Ajuste o limite máximo de zoom
+      >
+        <TransformComponent wrapperStyle={{ width: "100vw", height: "100vh" }}>
+          <canvas ref={canvasRef} />
+        </TransformComponent>
+      </TransformWrapper>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(isOpen) => {
+          setIsModalOpen(isOpen);
+          if (!isOpen) {
+            setSelectedBuilding(null); // Limpar selectedBuilding ao fechar o modal
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Building Details</DialogTitle>
+            <DialogDescription>
+              Here are the details of the selected building.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Building ID
+              </Label>
+              <Input
+                id="name"
+                value={selectedBuilding ? selectedBuilding.id : ""} // Definir como string vazia se selectedBuilding for null
+                className="col-span-3"
+                readOnly
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Building Position
+              </Label>
+              <Input
+                id="username"
+                value={`x: ${selectedBuilding?.x}, y: ${selectedBuilding?.y}`}
+                className="col-span-3"
+                readOnly
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setIsModalOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
