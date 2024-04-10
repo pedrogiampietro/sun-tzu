@@ -9,6 +9,7 @@ export function Village() {
 	const canvasRef = useRef(null);
 	const [scale, setScale] = useState(1.2);
 	const [position, setPosition] = useState({ x: 0, y: 0 });
+	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
 	let wasRealPanning = false;
 	const onPanningStart = (
@@ -73,7 +74,6 @@ export function Village() {
 			{ src: 'buildings/building14.png', x: 830, y: 650 },
 			{ src: 'buildings/building15.png', x: 840, y: 330 },
 		];
-
 		const buildings = buildingImages.map((building) => {
 			const img = new Image();
 			img.src = building.src;
@@ -124,6 +124,32 @@ export function Village() {
 			});
 		}
 
+		canvas.addEventListener('mousemove', handleMouseMove);
+
+		function handleMouseMove(event) {
+			const rect = canvas.getBoundingClientRect();
+			const x =
+				((event.clientX - rect.left) / (rect.right - rect.left)) * canvas.width;
+			const y =
+				((event.clientY - rect.top) / (rect.bottom - rect.top)) * canvas.height;
+			setMousePosition({ x, y });
+		}
+
+		function isMouseOverBuilding(building) {
+			const scaledMouseX = mousePosition.x / scale - position.x;
+			const scaledMouseY = mousePosition.y / scale - position.y;
+
+			const buildingWidth = building.img.width;
+			const buildingHeight = building.img.height;
+
+			return (
+				scaledMouseX >= building.x &&
+				scaledMouseX <= building.x + buildingWidth &&
+				scaledMouseY >= building.y &&
+				scaledMouseY <= building.y + buildingHeight
+			);
+		}
+
 		function animate() {
 			context.clearRect(0, 0, canvas.width, canvas.height);
 			context.save();
@@ -143,6 +169,17 @@ export function Village() {
 			buildings.forEach((building) => {
 				if (building.img.complete) {
 					context.drawImage(building.img, building.x, building.y);
+
+					// Se o mouse estiver sobre um prédio, desenhe um destaque
+					if (isMouseOverBuilding(building)) {
+						context.strokeStyle = 'red';
+						context.strokeRect(
+							building.x,
+							building.y,
+							building.img.width,
+							building.img.height
+						);
+					}
 				}
 			});
 
@@ -185,14 +222,17 @@ export function Village() {
 			animateRipples();
 
 			rotation += 0.01;
+
 			context.restore();
 			requestAnimationFrame(animate);
 		}
 
 		animate();
 
-		return () => {};
-	}, []);
+		return () => {
+			canvas.removeEventListener('mousemove', handleMouseMove);
+		};
+	}, [mousePosition]);
 
 	return (
 		<TransformWrapper
