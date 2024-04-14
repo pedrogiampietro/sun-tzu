@@ -184,6 +184,7 @@ export function Village() {
         wheel={{ step: 0.25 }}
         minScale={0.5} // Ajuste o limite mínimo de zoom
         maxScale={3} // Ajuste o limite máximo de zoom
+        doubleClick={{ disabled: true }}
       >
         <TransformComponent wrapperStyle={{ width: "100vw", height: "100vh" }}>
           <canvas ref={canvasRef} />
