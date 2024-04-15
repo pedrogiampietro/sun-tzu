@@ -399,6 +399,9 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     const lumberjackImage = new Image();
     lumberjackImage.src = "/characters_effects/lumberjack.png";
 
+    const workerImage = new Image();
+    workerImage.src = "/characters_effects/worker.png";
+
     const smokeImage = new Image();
     smokeImage.src = "/effects/smoke.png";
     let smokes = [];
@@ -440,8 +443,15 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     }
 
     let frameIndex = 0;
-    const totalFrames = 4; // número total de frames na imagem do lenhador
-    let frameWidth = lumberjackImage.width / totalFrames; // assumindo que todos os frames têm a mesma largura
+    const totalFrames = 4;
+    let frameWidth = lumberjackImage.width / totalFrames;
+
+    let frameWidthWorker = workerImage.width / 3;
+    let frameHeightWorker = workerImage.height / 2;
+    let currentFrameWorker = 0;
+    let counter = 0;
+    let speed = 10; // Ajuste este valor para controlar a velocidade da animação
+    let xPosWorker = 0; // Posição x inicial do trabalhador
 
     // Adicione um setInterval para atualizar o frame a cada 200 milissegundos
     const frameInterval = setInterval(() => {
@@ -588,6 +598,37 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           frameWidth,
           lumberjackImage.height // largura e altura no canvas
         );
+        context.restore();
+      }
+
+      if (workerImage.complete) {
+        context.save();
+        context.translate(1050 + xPosWorker, 250); // Adicione xPosWorker à posição x
+
+        let frameX = (currentFrameWorker % 3) * frameWidthWorker;
+        let frameY = 0; // Use sempre a linha superior da imagem
+
+        context.drawImage(
+          workerImage,
+          frameX,
+          frameY,
+          frameWidthWorker,
+          frameHeightWorker,
+          -frameWidthWorker / 2,
+          -frameHeightWorker / 2,
+          frameWidthWorker,
+          frameHeightWorker
+        );
+
+        // Incrementa currentFrameWorker apenas quando o contador atinge o valor de 'speed'
+        if (counter >= speed) {
+          currentFrameWorker = (currentFrameWorker + 1) % 3; // Limita currentFrameWorker a 0, 1, 2
+          counter = 0;
+          xPosWorker += 5; // Move o trabalhador 5 pixels para a direita a cada frame
+        } else {
+          counter++;
+        }
+
         context.restore();
       }
 
