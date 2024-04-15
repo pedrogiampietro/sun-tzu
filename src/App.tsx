@@ -5,6 +5,9 @@ export function App() {
   const [characterStatus, setCharacterStatus] = useState({
     castle_id: "1007304",
     avatar: "https://github.com/pedrogiampietro.png",
+    experience: 0,
+    level: 1,
+    buildings: [],
     population: {
       used: 0,
       max: "518",
@@ -40,7 +43,6 @@ export function App() {
         percent: 26.61375661375661,
       },
     },
-    buildings: [],
   });
   const [isLoading, setIsLoading] = useState(true);
 

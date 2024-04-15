@@ -36,7 +36,7 @@ const buildingImages = [
       wood: 200,
       iron: 100,
     },
-    evolutionTime: 5,
+    evolutionTime: 4,
   },
   {
     id: 1,
@@ -45,8 +45,8 @@ const buildingImages = [
     y: 150,
     level: 3,
     evolutionCost: {
-      wood: 250,
-      iron: 250,
+      wood: 300,
+      iron: 150,
     },
     evolutionTime: 5,
   },
@@ -74,7 +74,7 @@ const buildingImages = [
     },
     evolutionTime: 8,
   },
-];
+] as any;
 
 export function Village({ characterStatus, setCharacterStatus }: any) {
   const canvasRef = useRef(null);
@@ -126,7 +126,8 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           updatedLevel === 3
             ? null
             : buildingImages.find(
-                (b) => b.id === selectedBuilding.id && b.level === updatedLevel
+                (b: any) =>
+                  b.id === selectedBuilding.id && b.level === updatedLevel
               ).evolutionCost,
       };
 
@@ -163,6 +164,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     setCharacterStatus((prevStatus: any) => ({
       ...prevStatus,
       buildings: updatedBuildings,
+      experience: prevStatus.experience + 100,
     }));
   }
 
@@ -174,13 +176,39 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       const evolutionCost =
         level < 3 // Verifique se o nível é menor que 3 para evitar erros
           ? buildingImages.find(
-              (b) => b.id === building.id && b.level === level + 1
+              (b: any) => b.id === building.id && b.level === level + 1
             )?.evolutionCost || null // Obtenha os custos de evolução do próximo nível, se existirem
           : null; // Para o nível 3, não há custos de evolução
 
-      setSelectedBuilding({ ...building, evolutionCost }); // Atualize o estado do edifício selecionado com as informações atualizadas
+      setSelectedBuilding({ ...building, level, evolutionCost }); // Armazene os dados do edifício selecionado no estado
       setIsModalOpen(true); // Abra o modal
     }
+  }
+
+  const handleCloseModal = () => {
+    setSelectedBuilding(null);
+    setIsModalOpen(false);
+  };
+
+  function getBenefitsForNextLevel(building: any) {
+    const nextLevel = building.level + 1;
+    const nextLevelInfo = buildingImages.find(
+      (b: any) => b.id === building.id && b.level === nextLevel
+    );
+
+    if (nextLevelInfo) {
+      const benefits = Object.entries(nextLevelInfo.evolutionCost).map(
+        ([resource, cost]) => {
+          if (resource === "food") {
+            return `${cost} de food por segundo`;
+          } else {
+            return `${cost} de ${resource}`;
+          }
+        }
+      );
+      return benefits.join(", ");
+    }
+    return null;
   }
 
   useEffect(() => {
@@ -206,7 +234,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       context.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    const buildings = buildingImages.map((building) => {
+    const buildings = buildingImages.map((building: any) => {
       const img = new Image();
       img.src = building.src;
       return { ...building, img };
@@ -292,7 +320,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
       const mouseOverBuilding = getMouseOverBuilding();
 
-      buildings.forEach((building) => {
+      buildings.forEach((building: any) => {
         if (building.img.complete) {
           context.drawImage(building.img, building.x, building.y);
 
@@ -360,7 +388,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           <CharacterStatus characterStatus={characterStatus} />
         </div>
       </div>
-      <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
+      <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Building Details</DialogTitle>
@@ -369,6 +397,33 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {/* Adicionar o nível atual */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="currentLevel" className="text-right">
+                Current Level
+              </Label>
+              <Input
+                id="currentLevel"
+                value={selectedBuilding ? selectedBuilding.level : ""}
+                className="col-span-3"
+                readOnly
+              />
+            </div>
+            {/* Adicionar os benefícios do próximo nível */}
+            {selectedBuilding && selectedBuilding.level < 3 && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="nextLevelBenefits" className="text-right">
+                  Next Level Benefits
+                </Label>
+                <Input
+                  id="nextLevelBenefits"
+                  value={getBenefitsForNextLevel(selectedBuilding) || ""}
+                  className="col-span-3"
+                  readOnly
+                />
+              </div>
+            )}
+            {/* Adicionar Building ID e Building Position */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Building ID
@@ -396,6 +451,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
               />
             </div>
 
+            {/* Adicionar Evolution Cost e Evolution Time */}
             {selectedBuilding && selectedBuilding.evolutionCost && (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -404,7 +460,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                   </Label>
                   <div className="col-span-3">
                     {Object.entries(selectedBuilding.evolutionCost).map(
-                      ([resource, cost]) => (
+                      ([resource, cost]: any) => (
                         <div key={resource}>
                           {resource}: {cost}
                         </div>
@@ -426,6 +482,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
               </>
             )}
 
+            {/* Adicionar Building Timer se estiver em progresso */}
             {isBuildingInProgress && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="buildingTimer" className="text-right">
