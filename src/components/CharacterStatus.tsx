@@ -4,7 +4,7 @@ import BorderMagicAvatar from '../../public/avatar/border/border-magic.png';
 
 export function CharacterStatus({ characterStatus }: any) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	let modalRef = useRef();
+	let modalRef = useRef() as any;
 
 	if (!characterStatus) {
 		return null;

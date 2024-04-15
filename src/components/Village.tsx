@@ -21,12 +21,48 @@ export function Village({ characterStatus }: any) {
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [selectedBuilding, setSelectedBuilding] = useState<any>(null);
-	const [isLoading, setIsLoading] = useState(true);
 
 	function handleBuildingClick(building: any) {
 		if (building) {
 			setSelectedBuilding(building);
 			setIsModalOpen(true);
+		}
+	}
+
+	function evolveBuilding() {
+		if (selectedBuilding) {
+			const { evolutionCost } = selectedBuilding;
+			const updatedResources = { ...characterStatus.resources };
+
+			// Verifica se possui recursos suficientes para evoluir
+			const canEvolve = Object.entries(evolutionCost).every(
+				([resource, cost]) =>
+					updatedResources[resource] &&
+					updatedResources[resource].amount >= cost
+			);
+
+			if (canEvolve) {
+				// Subtrai os recursos necessários do estado do personagem
+				Object.entries(evolutionCost).forEach(([resource, cost]) => {
+					if (updatedResources[resource]) {
+						updatedResources[resource].amount -= cost;
+					}
+				});
+
+				// Atualiza o nível da construção
+				selectedBuilding.level++;
+
+				// Atualiza o estado do personagem com os recursos atualizados
+				setCharacterStatus({
+					...characterStatus,
+					resources: updatedResources,
+				});
+
+				// Fecha o modal
+				setIsModalOpen(false);
+			} else {
+				alert('You do not have enough resources to evolve this building.');
+			}
 		}
 	}
 
@@ -214,15 +250,8 @@ export function Village({ characterStatus }: any) {
 						wrapperStyle={{
 							height: '100vh',
 							width: '100vw',
-							// cursor: 'pointer',
 						}}
 						contentStyle={{
-							// backgroundImage: 'url("/public/grounds/ground.jpg")',
-							// backgroundSize: '40px 40px',
-							// backgroundPosition: '-19px -19px',
-							// minHeight: '100vh',
-							// minWidth: '100vw',
-							// padding: '100px',
 							boxSizing: 'border-box',
 						}}
 					>
@@ -236,9 +265,8 @@ export function Village({ characterStatus }: any) {
 						top: 0,
 						left: 0,
 						width: '100%',
-						padding: '20px', // Ajuste conforme necessário
+						padding: '20px',
 						boxSizing: 'border-box',
-						// backgroundColor: 'rgba(255, 255, 255, 0.7)', // Ajuste a opacidade conforme necessário
 					}}
 				>
 					<CharacterStatus characterStatus={characterStatus} />
@@ -310,6 +338,9 @@ export function Village({ characterStatus }: any) {
 						)}
 					</div>
 					<DialogFooter>
+						<Button type='button' onClick={evolveBuilding}>
+							Evolve Building
+						</Button>
 						<Button type='button' onClick={() => setIsModalOpen(false)}>
 							Close
 						</Button>

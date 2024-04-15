@@ -1,16 +1,12 @@
-import React from 'react';
-
 export function ResourceCard({ image, quantity }) {
 	return (
-		<div
-			style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}
-		>
+		<div style={{ display: 'flex', alignItems: 'center' }}>
 			<img
 				src={image}
 				alt='Resource'
-				style={{ width: '30px', marginRight: '10px' }}
+				style={{ width: '30px', marginRight: '5px' }}
 			/>
-			<span>{quantity}</span>
+			<span style={{ width: '30px', marginRight: '5px' }}>{quantity}</span>
 		</div>
 	);
 }
