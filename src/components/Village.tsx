@@ -13,6 +13,70 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
+const buildingImages = [
+  {
+    id: 1,
+    src: "buildings/building1.png",
+    x: 880,
+    y: 150,
+    level: 1,
+    evolutionCost: {
+      wood: 100,
+      iron: 50,
+    },
+    evolutionTime: 3, // Tempo em segundos
+  },
+  {
+    id: 1,
+    src: "buildings/building1.png",
+    x: 880,
+    y: 150,
+    level: 2,
+    evolutionCost: {
+      wood: 200, // Custos aumentados para o próximo nível
+      iron: 100, // Custos aumentados para o próximo nível
+    },
+    evolutionTime: 5, // Tempo em segundos aumentado para o próximo nível
+  },
+  {
+    id: 1,
+    src: "buildings/building1.png",
+    x: 880,
+    y: 150,
+    level: 3,
+    evolutionCost: {
+      wood: 250, // Custos aumentados para o próximo nível
+      iron: 250, // Custos aumentados para o próximo nível
+    },
+    evolutionTime: 5, // Tempo em segundos aumentado para o próximo nível
+  },
+  {
+    id: 2,
+    src: "buildings/building2.png",
+    x: 1220,
+    y: 170,
+    level: 1,
+    evolutionCost: {
+      wood: 150,
+      iron: 100,
+    },
+    evolutionTime: 5, // Tempo em segundos
+  },
+  {
+    id: 2,
+    src: "buildings/building2.png",
+    x: 1220,
+    y: 170,
+    level: 2,
+    evolutionCost: {
+      wood: 300, // Custos aumentados para o próximo nível
+      iron: 200, // Custos aumentados para o próximo nível
+      // Adicione outros recursos necessários para evolução
+    },
+    evolutionTime: 8, // Tempo em segundos aumentado para o próximo nível
+  },
+];
+
 export function Village({ characterStatus, setCharacterStatus }: any) {
   const canvasRef = useRef(null);
   const statusContainerRef = useRef(null); // Referência para o contêiner da barra de status
@@ -26,30 +90,50 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
   function evolveBuilding() {
     if (isBuildingInProgress) {
-      return; // Evita iniciar uma construção se já estiver em andamento
+      return;
     }
 
-    // Verifica se há recursos suficientes para evoluir a construção
+    // Verifica se há recursos suficientes para evoluir o edifício
     const canAfford = checkResources();
     if (!canAfford) {
       alert("You do not have enough resources to evolve this building.");
       return;
     }
 
-    // Inicia a construção
+    // Desconta os recursos necessários do characterStatus
+    for (let resource in selectedBuilding.evolutionCost) {
+      const requiredAmount = selectedBuilding.evolutionCost[resource];
+      characterStatus.resources[resource].amount -= requiredAmount;
+    }
+
     setIsBuildingInProgress(true);
     setBuildingTimeLeft(selectedBuilding.evolutionTime);
 
-    // Inicia o timer para decrementar o tempo restante
     const timer = setInterval(() => {
       setBuildingTimeLeft((prevTime) => prevTime - 1);
     }, 1000);
 
-    // Ao término do tempo, completa a construção e limpa o timer
     setTimeout(() => {
       setIsBuildingInProgress(false);
       clearInterval(timer);
       setBuildingTimeLeft(0);
+
+      // Atualiza o nível do edifício
+      const updatedLevel = selectedBuilding.level + 1;
+      const updatedBuilding = {
+        ...selectedBuilding,
+        level: updatedLevel,
+        evolutionCost:
+          updatedLevel === 3
+            ? null
+            : buildingImages.find(
+                (b) => b.id === selectedBuilding.id && b.level === updatedLevel
+              ).evolutionCost,
+      };
+
+      // Atualiza o estado do characterStatus com o edifício atualizado
+      updateCharacterStatus(updatedBuilding);
+      setSelectedBuilding(updatedBuilding); // Atualiza o selectedBuilding com o edifício atualizado
     }, selectedBuilding.evolutionTime * 1000);
   }
 
@@ -58,10 +142,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       const requiredAmount = selectedBuilding.evolutionCost[resource];
       const availableAmount = characterStatus.resources[resource].amount;
 
-      console.log(
-        `Checking resource: ${resource}, Required: ${requiredAmount}, Available: ${availableAmount}`
-      );
-
       if (availableAmount < requiredAmount) {
         return false; // Retorna false se não houver recursos suficientes
       }
@@ -69,11 +149,39 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     return true; // Retorna true se todos os recursos estiverem disponíveis
   }
 
+  function updateCharacterStatus(updatedBuilding) {
+    const updatedBuildings = [...characterStatus.buildings];
+    const index = updatedBuildings.findIndex(
+      (building) => building.id === updatedBuilding.id
+    );
+
+    if (index !== -1) {
+      updatedBuildings[index] = updatedBuilding;
+    } else {
+      updatedBuildings.push(updatedBuilding);
+    }
+
+    setCharacterStatus((prevStatus) => ({
+      ...prevStatus,
+      buildings: updatedBuildings,
+    }));
+  }
+
+  console.log("characterStgatus", characterStatus);
+
   function handleBuildingClick(building: any) {
     if (building) {
       setSelectedBuilding(building);
       setIsModalOpen(true);
     }
+    const level = building.level;
+    const evolutionCost =
+      level === 2
+        ? buildingImages.find((b) => b.id === building.id && b.level === 3)
+            .evolutionCost
+        : building.evolutionCost;
+    setSelectedBuilding({ ...building, evolutionCost });
+    setIsModalOpen(true);
   }
 
   useEffect(() => {
@@ -98,35 +206,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       context.fillStyle = pattern;
       context.fillRect(0, 0, canvas.width, canvas.height);
     };
-
-    const buildingImages = [
-      {
-        id: 1,
-        src: "buildings/building1.png",
-        x: 880,
-        y: 150,
-        level: 1,
-        evolutionCost: {
-          wood: 100,
-          iron: 50,
-          // Adicione outros recursos necessários para evolução
-        },
-        evolutionTime: 3, // Tempo em segundos
-      },
-      {
-        id: 2,
-        src: "buildings/building2.png",
-        x: 1220,
-        y: 170,
-        level: 1,
-        evolutionCost: {
-          wood: 150,
-          iron: 100,
-          // Adicione outros recursos necessários para evolução
-        },
-        evolutionTime: 5, // Tempo em segundos
-      },
-    ];
 
     const buildings = buildingImages.map((building) => {
       const img = new Image();
@@ -317,7 +396,8 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                 readOnly
               />
             </div>
-            {selectedBuilding && (
+
+            {selectedBuilding && selectedBuilding.evolutionCost && (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="evolutionCost" className="text-right">
@@ -346,6 +426,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                 </div>
               </>
             )}
+
             {isBuildingInProgress && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="buildingTimer" className="text-right">

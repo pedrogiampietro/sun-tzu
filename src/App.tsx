@@ -39,8 +39,8 @@ export function App() {
         amount: 503,
         percent: 26.61375661375661,
       },
-      buildings: [],
     },
+    buildings: [],
   });
   const [isLoading, setIsLoading] = useState(true);
 
