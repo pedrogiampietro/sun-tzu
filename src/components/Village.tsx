@@ -230,11 +230,11 @@ const buildingImages = [
     },
     evolutionTime: 8,
   },
-];
+] as any;
 
 export function Village({ characterStatus, setCharacterStatus }: any) {
   const canvasRef = useRef(null);
-  const statusContainerRef = useRef(null); // Referência para o contêiner da barra de status
+  const statusContainerRef = useRef(null);
   const [scale] = useState(1.2);
   const [position] = useState({ x: 0, y: 0 });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -248,14 +248,12 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       return;
     }
 
-    // Verifica se há recursos suficientes para evoluir o edifício
     const canAfford = checkResources();
     if (!canAfford) {
       alert("You do not have enough resources to evolve this building.");
       return;
     }
 
-    // Desconta os recursos necessários do characterStatus
     for (let resource in selectedBuilding.evolutionCost) {
       const requiredAmount = selectedBuilding.evolutionCost[resource];
       characterStatus.resources[resource].amount -= requiredAmount;
@@ -273,7 +271,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       clearInterval(timer);
       setBuildingTimeLeft(0);
 
-      // Atualiza o nível do edifício
       const updatedLevel = selectedBuilding.level + 1;
       const updatedBuilding = {
         ...selectedBuilding,
@@ -282,13 +279,13 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           updatedLevel === 3
             ? null
             : buildingImages.find(
-                (b) => b.id === selectedBuilding.id && b.level === updatedLevel
+                (b: any) =>
+                  b.id === selectedBuilding.id && b.level === updatedLevel
               ).evolutionCost,
       };
 
-      // Atualiza o estado do characterStatus com o edifício atualizado
       updateCharacterStatus(updatedBuilding);
-      setSelectedBuilding(updatedBuilding); // Atualiza o selectedBuilding com o edifício atualizado
+      setSelectedBuilding(updatedBuilding);
     }, selectedBuilding.evolutionTime * 1000);
   }
 
@@ -298,10 +295,10 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       const availableAmount = characterStatus.resources[resource].amount;
 
       if (availableAmount < requiredAmount) {
-        return false; // Retorna false se não houver recursos suficientes
+        return false;
       }
     }
-    return true; // Retorna true se todos os recursos estiverem disponíveis
+    return true;
   }
 
   function updateCharacterStatus(updatedBuilding: any) {
@@ -325,16 +322,17 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
   function handleBuildingClick(building: any) {
     if (building) {
       const level =
-        characterStatus.buildings.find((b) => b.id === building.id)?.level || 1; // Obtenha o nível do edifício do characterStatus ou use 1 como padrão
+        characterStatus.buildings.find((b: any) => b.id === building.id)
+          ?.level || 1;
       const evolutionCost =
-        level < 3 // Verifique se o nível é menor que 3 para evitar erros
+        level < 3
           ? buildingImages.find(
-              (b) => b.id === building.id && b.level === level + 1
-            )?.evolutionCost || null // Obtenha os custos de evolução do próximo nível, se existirem
-          : null; // Para o nível 3, não há custos de evolução
+              (b: any) => b.id === building.id && b.level === level + 1
+            )?.evolutionCost || null
+          : null;
 
-      setSelectedBuilding({ ...building, level, evolutionCost }); // Armazene os dados do edifício selecionado no estado
-      setIsModalOpen(true); // Abra o modal
+      setSelectedBuilding({ ...building, level, evolutionCost });
+      setIsModalOpen(true);
     }
   }
 
@@ -346,7 +344,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
   function getBenefitsForNextLevel(building: any) {
     const nextLevel = building.level + 1;
     const nextLevelInfo = buildingImages.find(
-      (b) => b.id === building.id && b.level === nextLevel
+      (b: any) => b.id === building.id && b.level === nextLevel
     );
 
     if (nextLevelInfo) {
@@ -387,7 +385,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       context.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    const buildings = buildingImages.map((building) => {
+    const buildings = buildingImages.map((building: any) => {
       const img = new Image();
       img.src = building.src;
       return { ...building, img };
@@ -404,12 +402,11 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
     const smokeImage = new Image();
     smokeImage.src = "/effects/smoke.png";
-    let smokes = [];
+    let smokes = [] as any;
 
     const rippleImage = new Image();
     rippleImage.src = "/effects/ripple.png";
 
-    // Array para armazenar os pontos de animação de ripple
     const ripplePoints = [
       { x: 770, y: 190 },
       { x: 770, y: 200 },
@@ -418,26 +415,22 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       { x: 770, y: 230 },
     ];
 
-    // Array para armazenar o deslocamento vertical das ondulações
     const rippleOffsets = new Array(ripplePoints.length).fill(0);
 
-    // Adiciona a animação de ripple nos pontos demarcados
     function drawRippleEffects() {
       ripplePoints.forEach((point, index) => {
         const offsetY = rippleOffsets[index];
-        // Calcula a opacidade com base na posição vertical da ondulação
         const opacity =
           1 -
           Math.abs(offsetY - rippleImage.height / 2) / (rippleImage.height / 2);
         context.globalAlpha = opacity;
         context.drawImage(rippleImage, point.x, point.y + offsetY);
-        context.globalAlpha = 1; // Restaura a opacidade para o valor padrão
+        context.globalAlpha = 1;
       });
     }
 
     function animateRipples() {
       rippleOffsets.forEach((offset, index) => {
-        // Reduzir a velocidade de deslocamento vertical
         rippleOffsets[index] = (offset + 0.1) % rippleImage.height;
       });
     }
@@ -450,12 +443,35 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     let frameHeightWorker = workerImage.height / 2;
     let currentFrameWorker = 0;
     let counter = 0;
-    let speed = 10; // Ajuste este valor para controlar a velocidade da animação
-    let xPosWorker = 0; // Posição x inicial do trabalhador
+    let speed = 10;
+    let waypoints = [
+      { x: 1050, y: 250 },
+      { x: 1060, y: 261 },
+      { x: 1072, y: 272 },
+      { x: 1082, y: 272 },
+      { x: 1092, y: 272 },
+      { x: 1102, y: 272 },
+      { x: 1122, y: 272 },
+      { x: 1132, y: 272 },
+      { x: 1142, y: 282 },
+      { x: 1152, y: 292 },
+      { x: 1172, y: 302 },
+      { x: 1182, y: 312 },
+      { x: 1192, y: 322 },
+      { x: 1202, y: 332 },
+      { x: 1212, y: 342 },
+      { x: 1222, y: 352 },
+      { x: 1232, y: 362 },
+      { x: 1242, y: 372 },
+      { x: 1252, y: 382 },
+      { x: 1262, y: 392 },
+    ];
 
-    // Adicione um setInterval para atualizar o frame a cada 200 milissegundos
+    let waypointIndex = 0;
+    let xPosWorker = waypoints[waypointIndex].x;
+    let yPosWorker = waypoints[waypointIndex].y;
+
     const frameInterval = setInterval(() => {
-      // Atualize o índice do frame para o próximo frame
       frameIndex = (frameIndex + 1) % totalFrames;
     }, 350);
 
@@ -507,7 +523,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           dragEnd.y - dragStart.y
         );
 
-        // Consider it a click if the mouse has moved less than 10 pixels.
         if (dragDistance < 10) {
           const building = getMouseOverBuilding();
           if (building && building.id === currentBuildingId) {
@@ -518,7 +533,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           }
         }
       }
-      dragStart = null; // Reset dragStart for the next drag operation.
+      dragStart = null;
     });
 
     function animate() {
@@ -549,7 +564,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
         }
       }
 
-      buildings.forEach((building) => {
+      buildings.forEach((building: any) => {
         if (building.img.complete) {
           context.drawImage(building.img, building.x, building.y);
 
@@ -583,30 +598,30 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
       if (lumberjackImage.complete) {
         context.save();
-        // Posicione o lenhador no mesmo local em cada frame
+
         context.translate(1770, 340);
 
-        // Desenhe apenas o frame atual da imagem
         context.drawImage(
           lumberjackImage,
           frameIndex * frameWidth,
-          0, // posição x, y na imagem de origem
+          0,
           frameWidth,
-          lumberjackImage.height, // largura e altura na imagem de origem
+          lumberjackImage.height,
           -frameWidth / 2,
-          -lumberjackImage.height / 2, // posição x, y no canvas
+          -lumberjackImage.height / 2,
           frameWidth,
-          lumberjackImage.height // largura e altura no canvas
+          lumberjackImage.height
         );
         context.restore();
       }
 
       if (workerImage.complete) {
         context.save();
-        context.translate(1050 + xPosWorker, 250); // Adicione xPosWorker à posição x
+        let currentWaypoint = waypoints[waypointIndex];
+        context.translate(xPosWorker, yPosWorker);
 
         let frameX = (currentFrameWorker % 3) * frameWidthWorker;
-        let frameY = 0; // Use sempre a linha superior da imagem
+        let frameY = 0;
 
         context.drawImage(
           workerImage,
@@ -620,11 +635,18 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           frameHeightWorker
         );
 
-        // Incrementa currentFrameWorker apenas quando o contador atinge o valor de 'speed'
         if (counter >= speed) {
-          currentFrameWorker = (currentFrameWorker + 1) % 3; // Limita currentFrameWorker a 0, 1, 2
+          currentFrameWorker = (currentFrameWorker + 1) % 3;
           counter = 0;
-          xPosWorker += 5; // Move o trabalhador 5 pixels para a direita a cada frame
+
+          if (
+            xPosWorker === currentWaypoint.x &&
+            yPosWorker === currentWaypoint.y
+          ) {
+            waypointIndex = (waypointIndex + 1) % waypoints.length;
+            xPosWorker = waypoints[waypointIndex].x;
+            yPosWorker = waypoints[waypointIndex].y;
+          }
         } else {
           counter++;
         }
@@ -632,20 +654,19 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
         context.restore();
       }
 
-      smokes.forEach((smoke, index) => {
+      smokes.forEach((smoke: any, index: any) => {
         context.globalAlpha = smoke.opacity;
         context.drawImage(smokeImage, smoke.x, smoke.y);
         context.globalAlpha = 1;
-        smoke.y -= 0.5; // Reduz a velocidade vertical
-        smoke.x -= 0.2; // Movimento horizontal para a esquerda
-        smoke.opacity -= 0.005; // Reduz a opacidade de forma mais lenta
+        smoke.y -= 0.5;
+        smoke.x -= 0.2;
+        smoke.opacity -= 0.005;
         if (smoke.opacity <= 0) {
           smokes.splice(index, 1);
         }
       });
 
       if (Math.random() < 0.02) {
-        // Diminui a frequência de geração de fumaça
         smokes.push({
           x: 400,
           y: 340,
@@ -655,7 +676,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
       drawRippleEffects();
 
-      // Atualiza a posição das ondulações
       animateRipples();
 
       rotation += 0.01;
@@ -674,7 +694,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
     return () => {
       canvas.removeEventListener("mousemove", handleMouseMove);
-      clearInterval(frameInterval); // Limpe o intervalo quando o componente for desmontado
+      clearInterval(frameInterval);
     };
   }, [mousePosition]);
 
@@ -722,7 +742,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* Adicionar o nível atual */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="currentLevel" className="text-right">
                 Current Level
@@ -734,7 +753,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                 readOnly
               />
             </div>
-            {/* Adicionar os benefícios do próximo nível */}
+
             {selectedBuilding && selectedBuilding.level < 3 && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="nextLevelBenefits" className="text-right">
@@ -742,13 +761,13 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                 </Label>
                 <Input
                   id="nextLevelBenefits"
-                  value={getBenefitsForNextLevel(selectedBuilding)}
+                  value={getBenefitsForNextLevel(selectedBuilding) || ""}
                   className="col-span-3"
                   readOnly
                 />
               </div>
             )}
-            {/* Adicionar Building ID e Building Position */}
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Building ID
@@ -776,7 +795,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
               />
             </div>
 
-            {/* Adicionar Evolution Cost e Evolution Time */}
             {selectedBuilding && selectedBuilding.evolutionCost && (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -785,7 +803,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                   </Label>
                   <div className="col-span-3">
                     {Object.entries(selectedBuilding.evolutionCost).map(
-                      ([resource, cost]) => (
+                      ([resource, cost]: any) => (
                         <div key={resource}>
                           {resource}: {cost}
                         </div>
@@ -807,7 +825,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
               </>
             )}
 
-            {/* Adicionar Building Timer se estiver em progresso */}
             {isBuildingInProgress && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="buildingTimer" className="text-right">
