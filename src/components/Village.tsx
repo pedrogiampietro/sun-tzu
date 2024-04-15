@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
-import { CharacterStatus } from "./CharacterStatus"; // Importe o componente CharacterStatus
+import { CharacterStatus } from "./CharacterStatus";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -24,7 +24,7 @@ const buildingImages = [
       wood: 100,
       iron: 50,
     },
-    evolutionTime: 3, // Tempo em segundos
+    evolutionTime: 3,
   },
   {
     id: 1,
@@ -33,10 +33,10 @@ const buildingImages = [
     y: 150,
     level: 2,
     evolutionCost: {
-      wood: 200, // Custos aumentados para o próximo nível
-      iron: 100, // Custos aumentados para o próximo nível
+      wood: 200,
+      iron: 100,
     },
-    evolutionTime: 5, // Tempo em segundos aumentado para o próximo nível
+    evolutionTime: 5,
   },
   {
     id: 1,
@@ -45,10 +45,10 @@ const buildingImages = [
     y: 150,
     level: 3,
     evolutionCost: {
-      wood: 250, // Custos aumentados para o próximo nível
-      iron: 250, // Custos aumentados para o próximo nível
+      wood: 250,
+      iron: 250,
     },
-    evolutionTime: 5, // Tempo em segundos aumentado para o próximo nível
+    evolutionTime: 5,
   },
   {
     id: 2,
@@ -60,7 +60,7 @@ const buildingImages = [
       wood: 150,
       iron: 100,
     },
-    evolutionTime: 5, // Tempo em segundos
+    evolutionTime: 5,
   },
   {
     id: 2,
@@ -69,11 +69,10 @@ const buildingImages = [
     y: 170,
     level: 2,
     evolutionCost: {
-      wood: 300, // Custos aumentados para o próximo nível
-      iron: 200, // Custos aumentados para o próximo nível
-      // Adicione outros recursos necessários para evolução
+      wood: 300,
+      iron: 200,
     },
-    evolutionTime: 8, // Tempo em segundos aumentado para o próximo nível
+    evolutionTime: 8,
   },
 ];
 
@@ -149,7 +148,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     return true; // Retorna true se todos os recursos estiverem disponíveis
   }
 
-  function updateCharacterStatus(updatedBuilding) {
+  function updateCharacterStatus(updatedBuilding: any) {
     const updatedBuildings = [...characterStatus.buildings];
     const index = updatedBuildings.findIndex(
       (building) => building.id === updatedBuilding.id
@@ -161,27 +160,27 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       updatedBuildings.push(updatedBuilding);
     }
 
-    setCharacterStatus((prevStatus) => ({
+    setCharacterStatus((prevStatus: any) => ({
       ...prevStatus,
       buildings: updatedBuildings,
     }));
   }
 
-  console.log("characterStgatus", characterStatus);
-
   function handleBuildingClick(building: any) {
     if (building) {
-      setSelectedBuilding(building);
-      setIsModalOpen(true);
+      const level =
+        characterStatus.buildings.find((b: any) => b.id === building.id)
+          ?.level || 1; // Obtenha o nível do edifício do characterStatus ou use 1 como padrão
+      const evolutionCost =
+        level < 3 // Verifique se o nível é menor que 3 para evitar erros
+          ? buildingImages.find(
+              (b) => b.id === building.id && b.level === level + 1
+            )?.evolutionCost || null // Obtenha os custos de evolução do próximo nível, se existirem
+          : null; // Para o nível 3, não há custos de evolução
+
+      setSelectedBuilding({ ...building, evolutionCost }); // Atualize o estado do edifício selecionado com as informações atualizadas
+      setIsModalOpen(true); // Abra o modal
     }
-    const level = building.level;
-    const evolutionCost =
-      level === 2
-        ? buildingImages.find((b) => b.id === building.id && b.level === 3)
-            .evolutionCost
-        : building.evolutionCost;
-    setSelectedBuilding({ ...building, evolutionCost });
-    setIsModalOpen(true);
   }
 
   useEffect(() => {
