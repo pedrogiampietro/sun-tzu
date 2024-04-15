@@ -74,7 +74,7 @@ const buildingImages = [
     },
     evolutionTime: 8,
   },
-] as any;
+];
 
 export function Village({ characterStatus, setCharacterStatus }: any) {
   const canvasRef = useRef(null);
@@ -126,8 +126,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           updatedLevel === 3
             ? null
             : buildingImages.find(
-                (b: any) =>
-                  b.id === selectedBuilding.id && b.level === updatedLevel
+                (b) => b.id === selectedBuilding.id && b.level === updatedLevel
               ).evolutionCost,
       };
 
@@ -164,19 +163,17 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     setCharacterStatus((prevStatus: any) => ({
       ...prevStatus,
       buildings: updatedBuildings,
-      experience: prevStatus.experience + 100,
     }));
   }
 
   function handleBuildingClick(building: any) {
     if (building) {
       const level =
-        characterStatus.buildings.find((b: any) => b.id === building.id)
-          ?.level || 1; // Obtenha o nível do edifício do characterStatus ou use 1 como padrão
+        characterStatus.buildings.find((b) => b.id === building.id)?.level || 1; // Obtenha o nível do edifício do characterStatus ou use 1 como padrão
       const evolutionCost =
         level < 3 // Verifique se o nível é menor que 3 para evitar erros
           ? buildingImages.find(
-              (b: any) => b.id === building.id && b.level === level + 1
+              (b) => b.id === building.id && b.level === level + 1
             )?.evolutionCost || null // Obtenha os custos de evolução do próximo nível, se existirem
           : null; // Para o nível 3, não há custos de evolução
 
@@ -193,7 +190,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
   function getBenefitsForNextLevel(building: any) {
     const nextLevel = building.level + 1;
     const nextLevelInfo = buildingImages.find(
-      (b: any) => b.id === building.id && b.level === nextLevel
+      (b) => b.id === building.id && b.level === nextLevel
     );
 
     if (nextLevelInfo) {
@@ -234,7 +231,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       context.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    const buildings = buildingImages.map((building: any) => {
+    const buildings = buildingImages.map((building) => {
       const img = new Image();
       img.src = building.src;
       return { ...building, img };
@@ -320,7 +317,17 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
       const mouseOverBuilding = getMouseOverBuilding();
 
-      buildings.forEach((building: any) => {
+      function updateCustomCursor(isOverBuilding: boolean) {
+        if (isOverBuilding) {
+          canvas.classList.remove("custom-cursor");
+          canvas.classList.add("custom-cursor-pointer");
+        } else {
+          canvas.classList.remove("custom-cursor-pointer");
+          canvas.classList.add("custom-cursor");
+        }
+      }
+
+      buildings.forEach((building) => {
         if (building.img.complete) {
           context.drawImage(building.img, building.x, building.y);
 
@@ -332,6 +339,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
               building.img.width,
               building.img.height
             );
+
             if (building.id !== currentBuildingId) {
               console.log(`Mouse is over building with ID: ${building.id}`);
               currentBuildingId = building.id;
@@ -339,6 +347,12 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           }
         }
       });
+
+      if (mouseOverBuilding) {
+        updateCustomCursor(true);
+      } else {
+        updateCustomCursor(false);
+      }
 
       rotation += 0.01;
 
@@ -417,7 +431,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                 </Label>
                 <Input
                   id="nextLevelBenefits"
-                  value={getBenefitsForNextLevel(selectedBuilding) || ""}
+                  value={getBenefitsForNextLevel(selectedBuilding)}
                   className="col-span-3"
                   readOnly
                 />
@@ -460,7 +474,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
                   </Label>
                   <div className="col-span-3">
                     {Object.entries(selectedBuilding.evolutionCost).map(
-                      ([resource, cost]: any) => (
+                      ([resource, cost]) => (
                         <div key={resource}>
                           {resource}: {cost}
                         </div>
