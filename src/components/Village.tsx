@@ -237,6 +237,22 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
       return { ...building, img };
     });
 
+    const aircraftImage = new Image();
+    aircraftImage.src = "/effects/farmBlade.png";
+
+    const lumberjackImage = new Image();
+    lumberjackImage.src = "/characters_effects/lumberjack.png";
+
+    let frameIndex = 0;
+    const totalFrames = 4; // número total de frames na imagem do lenhador
+    let frameWidth = lumberjackImage.width / totalFrames; // assumindo que todos os frames têm a mesma largura
+
+    // Adicione um setInterval para atualizar o frame a cada 200 milissegundos
+    const frameInterval = setInterval(() => {
+      // Atualize o índice do frame para o próximo frame
+      frameIndex = (frameIndex + 1) % totalFrames;
+    }, 400); // Atualiza a cada 200 milissegundos
+
     canvas.addEventListener("mousemove", handleMouseMove);
 
     function handleMouseMove(event: any) {
@@ -317,16 +333,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
       const mouseOverBuilding = getMouseOverBuilding();
 
-      function updateCustomCursor(isOverBuilding: boolean) {
-        if (isOverBuilding) {
-          canvas.classList.remove("custom-cursor");
-          canvas.classList.add("custom-cursor-pointer");
-        } else {
-          canvas.classList.remove("custom-cursor-pointer");
-          canvas.classList.add("custom-cursor");
-        }
-      }
-
       buildings.forEach((building) => {
         if (building.img.complete) {
           context.drawImage(building.img, building.x, building.y);
@@ -339,7 +345,6 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
               building.img.width,
               building.img.height
             );
-
             if (building.id !== currentBuildingId) {
               console.log(`Mouse is over building with ID: ${building.id}`);
               currentBuildingId = building.id;
@@ -348,10 +353,36 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
         }
       });
 
-      if (mouseOverBuilding) {
-        updateCustomCursor(true);
-      } else {
-        updateCustomCursor(false);
+      if (aircraftImage.complete) {
+        context.save();
+        context.translate(1745, 540);
+        context.rotate(rotation);
+        context.drawImage(
+          aircraftImage,
+          -aircraftImage.width / 2,
+          -aircraftImage.height / 2
+        );
+        context.restore();
+      }
+
+      if (lumberjackImage.complete) {
+        context.save();
+        // Posicione o lenhador no mesmo local em cada frame
+        context.translate(1770, 340);
+
+        // Desenhe apenas o frame atual da imagem
+        context.drawImage(
+          lumberjackImage,
+          frameIndex * frameWidth,
+          0, // posição x, y na imagem de origem
+          frameWidth,
+          lumberjackImage.height, // largura e altura na imagem de origem
+          -frameWidth / 2,
+          -lumberjackImage.height / 2, // posição x, y no canvas
+          frameWidth,
+          lumberjackImage.height // largura e altura no canvas
+        );
+        context.restore();
       }
 
       rotation += 0.01;
@@ -364,6 +395,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
     return () => {
       canvas.removeEventListener("mousemove", handleMouseMove);
+      clearInterval(frameInterval); // Limpe o intervalo quando o componente for desmontado
     };
   }, [mousePosition]);
 
