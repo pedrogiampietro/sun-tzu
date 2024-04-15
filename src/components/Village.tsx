@@ -74,6 +74,162 @@ const buildingImages = [
     },
     evolutionTime: 8,
   },
+  {
+    id: 3,
+    src: "buildings/building3.png",
+    x: 1520,
+    y: 150,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 4,
+    src: "buildings/building4.png",
+    x: 1600,
+    y: 490,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 5,
+    src: "buildings/building5.png",
+    x: 500,
+    y: 500,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 6,
+    src: "buildings/building6.png",
+    x: 1150,
+    y: 450,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 7,
+    src: "buildings/building7.png",
+    x: 1030,
+    y: 760,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 8,
+    src: "buildings/building8.png",
+    x: 1340,
+    y: 560,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 9,
+    src: "buildings/building9.png",
+    x: 350,
+    y: 380,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 10,
+    src: "buildings/building10.png",
+    x: 1200,
+    y: 700,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 11,
+    src: "buildings/building11.png",
+    x: 870,
+    y: 450,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 12,
+    src: "buildings/building12.png",
+    x: 1300,
+    y: 300,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 13,
+    src: "buildings/building13.png",
+    x: 500,
+    y: 200,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 14,
+    src: "buildings/building14.png",
+    x: 830,
+    y: 650,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
+  {
+    id: 15,
+    src: "buildings/building15.png",
+    x: 840,
+    y: 330,
+    level: 2,
+    evolutionCost: {
+      wood: 300,
+      iron: 200,
+    },
+    evolutionTime: 8,
+  },
 ];
 
 export function Village({ characterStatus, setCharacterStatus }: any) {
@@ -251,7 +407,7 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
     const frameInterval = setInterval(() => {
       // Atualize o índice do frame para o próximo frame
       frameIndex = (frameIndex + 1) % totalFrames;
-    }, 400); // Atualiza a cada 200 milissegundos
+    }, 350);
 
     canvas.addEventListener("mousemove", handleMouseMove);
 
@@ -333,6 +489,16 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
 
       const mouseOverBuilding = getMouseOverBuilding();
 
+      function updateCustomCursor(isOverBuilding: boolean) {
+        if (isOverBuilding) {
+          canvas.classList.remove("custom-cursor");
+          canvas.classList.add("custom-cursor-pointer");
+        } else {
+          canvas.classList.remove("custom-cursor-pointer");
+          canvas.classList.add("custom-cursor");
+        }
+      }
+
       buildings.forEach((building) => {
         if (building.img.complete) {
           context.drawImage(building.img, building.x, building.y);
@@ -383,6 +549,12 @@ export function Village({ characterStatus, setCharacterStatus }: any) {
           lumberjackImage.height // largura e altura no canvas
         );
         context.restore();
+      }
+
+      if (mouseOverBuilding) {
+        updateCustomCursor(true);
+      } else {
+        updateCustomCursor(false);
       }
 
       rotation += 0.01;
