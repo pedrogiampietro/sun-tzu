@@ -79,19 +79,19 @@ export function CharacterStatus({ characterStatus }: any) {
           }}
         >
           <ResourceCard
-            image="/public/resources/ironIcon.xs.png"
+            image="/resources/ironIcon.xs.png"
             quantity={resources.iron.amount}
           />
           <ResourceCard
-            image="/public/resources/foodIcon.xs.png"
+            image="/resources/foodIcon.xs.png"
             quantity={resources.food.amount}
           />
           <ResourceCard
-            image="/public/resources/goldIcon.xs.png"
+            image="/resources/goldIcon.xs.png"
             quantity={resources.gold.amount}
           />
           <ResourceCard
-            image="/public/resources/woodIcon.xs.png"
+            image="/resources/woodIcon.xs.png"
             quantity={resources.wood.amount}
           />
         </div>
